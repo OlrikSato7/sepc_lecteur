@@ -1,11 +1,13 @@
 #include <time.h>
 #include <assert.h>
+#include <pthread.h>
 #include "ensivorbis.h"
 #include "ensitheora.h"
 #include "stream_common.h"
 #include "synchro.h"
 
 bool fini = false;
+pthread_t theora2sdlthread;
 
 
 struct timespec datedebut;
@@ -37,10 +39,10 @@ void pageReader(FILE *vf, ogg_sync_state *pstate, ogg_page *ppage) {
 	if (bytes > 0)
 	    // écriture des données dans l'automate de décodage
 	    ogg_sync_wrote( pstate, bytes );
-	    
+
 	res = ogg_sync_pageout( pstate, ppage );
     }
-    
+
 }
 
 struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
@@ -76,8 +78,8 @@ struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
 
 	if (type == TYPE_THEORA)
 	    HASH_FIND_INT( theorastrstate, & serial, s );
-	else	
-	    HASH_FIND_INT( vorbisstrstate, & serial, s );    
+	else
+	    HASH_FIND_INT( vorbisstrstate, & serial, s );
 
 	assert(s != NULL);
     }
@@ -91,7 +93,7 @@ int addPageGetPacket(ogg_page *ppage, struct streamstate *s) {
     // ajout de la page dans le stream
     int res = ogg_stream_pagein( & s->strstate, ppage );
     assert(res == 0);
-    
+
     // retirer un packet du stream
     int respac = ogg_stream_packetout( & s->strstate, & s->packet );
     return respac;
@@ -106,7 +108,7 @@ int getPacket(struct streamstate *s) {
 
 /* decode headers and update stream structure */
 /* create additional threads if the stream is of the right type */
-/* return 1, if the packet is fully handled 
+/* return 1, if the packet is fully handled
    otherwise return 0;
  */
 
@@ -120,14 +122,16 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 				 & s->th_dec.setup,
 				 & s->packet);
 
-	if (res != TH_ENOTFORMAT) {
+	if (res != TH_ENOTFORMAT)
+  {
 	    // this is a theora
-	    if (res > 0 )  {
-		// this a theora header
-		// there are 3 headers
-		s->strtype = TYPE_THEORA;
-		// we have finish with the packet
-		return 1;
+	    if (res > 0 )
+      {
+    		// this a theora header
+    		// there are 3 headers
+    		s->strtype = TYPE_THEORA;
+    		// we have finish with the packet
+    		return 1;
 	    }
 
             // premier packet de données theora
@@ -138,11 +142,13 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 	    assert(s->strtype == TYPE_THEORA);
 	    s->headersRead = true;
 
-	    if (type == TYPE_THEORA) {
+	    if (type == TYPE_THEORA)
+      {
 		// lancement du thread gérant l'affichage (draw2SDL)
 	        // inserer votre code ici !!
+          pthread_create(&theora2sdlthread, NULL, draw2SDL, &(s->serial));
 
-		assert(res == 0);		     
+		      assert(res == 0);
 	    }
 	}
     }
