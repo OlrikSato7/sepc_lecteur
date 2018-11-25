@@ -10,6 +10,7 @@ bool fini = false;
 pthread_t theora2sdlthread;
 
 
+
 struct timespec datedebut;
 
 int msFromStart() {
@@ -52,36 +53,45 @@ struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
     int bos = ogg_page_bos( ppage );
 
     struct streamstate *s= NULL;
-    if (bos) { // début de stream
-	s = malloc(sizeof(struct streamstate));
-	s->serial = serial;
-	s->nbpacket = 0;
-	s->nbpacketoutsync = 0;
-	s->strtype = TYPE_UNKNOW;
-	s->headersRead = false;
-	int res = ogg_stream_init( & s->strstate, serial );
-	th_info_init(& s->th_dec.info);
-	th_comment_init(& s->th_dec.comment);
-	vorbis_info_init( & s->vo_dec.info);
-	vorbis_comment_init( & s->vo_dec.comment);
-	assert(res == 0);
+    if (bos)
+    { // début de stream
+    	s = malloc(sizeof(struct streamstate));
+    	s->serial = serial;
+    	s->nbpacket = 0;
+    	s->nbpacketoutsync = 0;
+    	s->strtype = TYPE_UNKNOW;
+    	s->headersRead = false;
+    	int res = ogg_stream_init( & s->strstate, serial );
+    	th_info_init(& s->th_dec.info);
+    	th_comment_init(& s->th_dec.comment);
+    	vorbis_info_init( & s->vo_dec.info);
+    	vorbis_comment_init( & s->vo_dec.comment);
+    	assert(res == 0);
 
+    	// proteger l'accès à la hashmap
+      lockhashmutex();
+
+    	if (type == TYPE_THEORA)
+    	    HASH_ADD_INT( theorastrstate, serial, s );
+    	else
+    	    HASH_ADD_INT( vorbisstrstate, serial, s );
+
+      unlockhashmutex();
+
+    }
+    else
+    {
 	// proteger l'accès à la hashmap
+      lockhashmutex();
 
-	if (type == TYPE_THEORA)
-	    HASH_ADD_INT( theorastrstate, serial, s );
-	else
-	    HASH_ADD_INT( vorbisstrstate, serial, s );
+    	if (type == TYPE_THEORA)
+    	    HASH_FIND_INT( theorastrstate, & serial, s );
+    	else
+    	    HASH_FIND_INT( vorbisstrstate, & serial, s );
 
-    } else {
-	// proteger l'accès à la hashmap
+      unlockhashmutex();
 
-	if (type == TYPE_THEORA)
-	    HASH_FIND_INT( theorastrstate, & serial, s );
-	else
-	    HASH_FIND_INT( vorbisstrstate, & serial, s );
-
-	assert(s != NULL);
+    	assert(s != NULL);
     }
     assert(s != NULL);
 

@@ -24,4 +24,9 @@ void finConsommerTexture();
 void debutDeposerTexture();
 void finDeposerTexture();
 
+void inithashmutex();
+void lockhashmutex();
+void unlockhashmutex();
+void destroyhashmutex();
+
 #endif

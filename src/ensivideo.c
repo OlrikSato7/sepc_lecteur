@@ -6,6 +6,7 @@
 
 #include "stream_common.h"
 #include "oggstream.h"
+#include "synchro.h"
 
 
 int main(int argc, char *argv[]) {
@@ -26,6 +27,9 @@ int main(int argc, char *argv[]) {
     // start the two stream readers
     void *status;
     pthread_t theopid, vorbpid;
+
+    inithashmutex();
+
     pthread_create(&theopid, NULL, theoraStreamReader, argv[1]);
     pthread_create(&vorbpid, NULL, vorbisStreamReader, argv[1]);
 
@@ -43,6 +47,8 @@ int main(int argc, char *argv[]) {
 
     pthread_join(theora2sdlthread, &status);
     pthread_join(theopid, &status);
+
+    destroyhashmutex();
 
     exit(EXIT_SUCCESS);
 }
