@@ -45,7 +45,17 @@ void pageReader(FILE *vf, ogg_sync_state *pstate, ogg_page *ppage) {
     }
 
 }
-
+/*manu:
+*On a une page, un type de flux et pstate?
+*serial = retourne l'unique numero de flux associe a cette page
+*bos: indique si la page est au debut du flux.
+* si oui:
+*on cree un streamstate correspondnat
+* on le met dans la table de hash
+*si non:
+*le stream est deja dans la table de hash, on la trouve (find)
+*
+*/
 struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
 				   enum streamtype type) {
     // trouver le stream associé à la page ou le construire
@@ -68,28 +78,28 @@ struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
     	vorbis_comment_init( & s->vo_dec.comment);
     	assert(res == 0);
 
-    	// proteger l'accès à la hashmap
-      lockhashmutex();
+    	// proteger l'accès à la hashMap
+      lockhashMutex();
 
     	if (type == TYPE_THEORA)
     	    HASH_ADD_INT( theorastrstate, serial, s );
     	else
     	    HASH_ADD_INT( vorbisstrstate, serial, s );
 
-      unlockhashmutex();
+      unlockhashMutex();
 
     }
     else
     {
-	// proteger l'accès à la hashmap
-      lockhashmutex();
+	// proteger l'accès à la hashMap
+      lockhashMutex();
 
     	if (type == TYPE_THEORA)
     	    HASH_FIND_INT( theorastrstate, & serial, s );
     	else
     	    HASH_FIND_INT( vorbisstrstate, & serial, s );
 
-      unlockhashmutex();
+      unlockhashMutex();
 
     	assert(s != NULL);
     }

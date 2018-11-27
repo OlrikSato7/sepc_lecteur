@@ -28,7 +28,8 @@ int main(int argc, char *argv[]) {
     void *status;
     pthread_t theopid, vorbpid;
 
-    inithashmutex();
+    inithashMutex();
+    initFenetreMutex();
 
     pthread_create(&theopid, NULL, theoraStreamReader, argv[1]);
     pthread_create(&vorbpid, NULL, vorbisStreamReader, argv[1]);
@@ -48,7 +49,12 @@ int main(int argc, char *argv[]) {
     pthread_join(theora2sdlthread, &status);
     pthread_join(theopid, &status);
 
-    destroyhashmutex();
+
+
+
+    destroyFenetreMutex();
+    destroyhashMutex();
+
 
     exit(EXIT_SUCCESS);
 }
