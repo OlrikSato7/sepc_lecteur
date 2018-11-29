@@ -20,6 +20,8 @@ SDL_Rect rect = {};
 struct streamstate *theorastrstate=NULL;
 
 void *draw2SDL(void *arg) {
+  /*modif manu pour recuperer le meme stream.. SEG FAULT*/
+    //int serial = *((int *) arg);
     int serial = (int) (long long int) arg;
     struct streamstate *s= NULL;
     SDL_Texture* texture = NULL;
@@ -67,7 +69,11 @@ void *draw2SDL(void *arg) {
 
     unlockhashMutex();
     fprintf(stderr, "lalala\n");
-    fprintf(stderr, "s->strtype: %i \n",s->strtype);
+    // fprintf(stderr, "lalala\n");
+    // fprintf(stderr, "lalala\n");
+
+    //PROBLEME!
+    fprintf(stderr, "serial: %i \n",serial);
 
     assert(s->strtype == TYPE_THEORA);
 

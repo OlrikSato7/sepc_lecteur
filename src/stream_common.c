@@ -79,8 +79,9 @@ struct streamstate *getStreamState(ogg_sync_state *pstate, ogg_page *ppage,
     	assert(res == 0);
 
     	// proteger l'accès à la hashMap
-      lockhashMutex();
+      fprintf(stderr,"%i\n",serial );
 
+      lockhashMutex();
     	if (type == TYPE_THEORA)
     	    HASH_ADD_INT( theorastrstate, serial, s );
     	else
@@ -166,6 +167,7 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
       {
 		// lancement du thread gérant l'affichage (draw2SDL)
 	        // inserer votre code ici !!
+          fprintf(stderr, "draw appele avec s->serial: %i\n",(s->serial));
           pthread_create(&theora2sdlthread, NULL, draw2SDL, &(s->serial));
 
 		      assert(res == 0);
