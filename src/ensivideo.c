@@ -33,6 +33,9 @@ int main(int argc, char *argv[]) {
 
     pthread_create(&theopid, NULL, theoraStreamReader, argv[1]);
     pthread_create(&vorbpid, NULL, vorbisStreamReader, argv[1]);
+    initConditionAfficheur();
+    iniConditionDecodeur();
+
 
     // wait audio thread
     pthread_join(vorbpid, &status);
@@ -54,6 +57,8 @@ int main(int argc, char *argv[]) {
 
     destroyFenetreMutex();
     destroyhashMutex();
+    destroyConditionDecodeur();
+    destroyConditionAfficheur();
 
 
     exit(EXIT_SUCCESS);

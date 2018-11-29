@@ -8,8 +8,8 @@
 int windowsx = 0;
 int windowsy = 0;
 
-int tex_iaff= 0;
-int tex_iwri= 0;
+int  tex_iaff= 0;
+int  tex_iwri= 0;
 
 
 static SDL_Window *screen = NULL;
@@ -23,7 +23,7 @@ void *draw2SDL(void *arg) {
     int serial = (int) (long long int) arg;
     struct streamstate *s= NULL;
     SDL_Texture* texture = NULL;
-
+    fprintf(stderr,"ola\n");
     attendreTailleFenetre();
 
     // create SDL window (if not done) and renderer
@@ -66,10 +66,13 @@ void *draw2SDL(void *arg) {
     HASH_FIND_INT( theorastrstate, &serial, s );
 
     unlockhashMutex();
+    fprintf(stderr, "lalala\n");
+    fprintf(stderr, "s->strtype: %i \n",s->strtype);
 
     assert(s->strtype == TYPE_THEORA);
 
     while(! fini) {
+
 	// récupérer les évenements de fin
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
@@ -133,19 +136,21 @@ void theora2SDL(struct streamstate *s) {
 	res =  th_decode_ycbcr_out(s->th_dec.ctx, videobuffer);
 
 	// Envoyer la taille de la fenêtre
+  fprintf(stderr,"manu\n");
 	envoiTailleFenetre(videobuffer);
 
 	attendreFenetreTexture();
 
+
 	// copy the buffer
 	rect.w = videobuffer[0].width;
+
 	rect.h = videobuffer[0].height;
 	// once = true;
     }
 
 
     // 1 seul producteur/un seul conso => synchro sur le nb seulement
-
     debutDeposerTexture();
 
 
