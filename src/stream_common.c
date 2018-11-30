@@ -34,6 +34,7 @@ void pageReader(FILE *vf, ogg_sync_state *pstate, ogg_page *ppage) {
 	int bytes = fread( buffer, 1, 4096, vf );
 	if (bytes == 0 && feof( vf )) {
 	    printf("fin du fichier\n");
+
 	    fini = true;
 	    exit(EXIT_FAILURE); // ou juste return ?
 	}
@@ -134,6 +135,7 @@ int getPacket(struct streamstate *s) {
  */
 
 int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
+
     // if the packet is complete, decode it
     if (respac == 1 && (! s->headersRead) &&
 	s->strtype != TYPE_VORBIS) {
@@ -157,8 +159,11 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 
             // premier packet de données theora
 	    // allocation du contexte
+      //FINI devient 1!
 	    s->th_dec.ctx = th_decode_alloc(& s->th_dec.info,
 					    s->th_dec.setup);
+              fprintf(stderr, "fini: %i\n", fini);
+
 	    assert(s->th_dec.ctx != NULL);
 	    assert(s->strtype == TYPE_THEORA);
 	    s->headersRead = true;
@@ -168,7 +173,7 @@ int decodeAllHeaders(int respac, struct streamstate *s, enum streamtype type) {
 		// lancement du thread gérant l'affichage (draw2SDL)
 	        // inserer votre code ici !!
           fprintf(stderr, "draw appele avec s->serial: %i\n",(s->serial));
-          pthread_create(&theora2sdlthread, NULL, draw2SDL, &(s->serial));
+          pthread_create(&theora2sdlthread, NULL, draw2SDL, (void *) (long long int )(s->serial));
 
 		      assert(res == 0);
 	    }

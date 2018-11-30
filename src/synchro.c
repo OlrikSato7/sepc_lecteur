@@ -4,7 +4,7 @@
 #include "ensitheora.h"
 
 
-bool fini;
+//bool fini;
 int nb_case_pleine = 0;
 /* les variables pour la synchro, ici */
 
@@ -95,11 +95,13 @@ void finConsommerTexture() {
   tex_iaff = (tex_iaff + 1 ) % (NBTEX -1);
   //reveille le thread product si il dors
   pthread_cond_signal(&producteur);
+
   pthread_mutex_unlock(&mutexTexture);
 }
 
 
 void debutDeposerTexture() {
+
   pthread_mutex_lock(&mutexTexture);
   while(nb_case_pleine == NBTEX){
     pthread_cond_wait(&producteur, &mutexTexture);
@@ -115,6 +117,8 @@ void finDeposerTexture() {
   tex_iwri = (tex_iwri + 1 ) % (NBTEX -1);
   //reveille le thread consom si il dors
   pthread_cond_signal(&consomateur);
+  fprintf(stderr, "nb case pleine: %i\n", nb_case_pleine);
+
   pthread_mutex_unlock(&mutexTexture);
 }
 

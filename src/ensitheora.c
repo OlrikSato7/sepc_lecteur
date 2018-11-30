@@ -20,6 +20,7 @@ SDL_Rect rect = {};
 struct streamstate *theorastrstate=NULL;
 
 void *draw2SDL(void *arg) {
+
   /*modif manu pour recuperer le meme stream.. SEG FAULT*/
     //int serial = *((int *) arg);
     int serial = (int) (long long int) arg;
@@ -76,20 +77,23 @@ void *draw2SDL(void *arg) {
     fprintf(stderr, "serial: %i \n",serial);
 
     assert(s->strtype == TYPE_THEORA);
+    // fini = false /*. la on a la video en mode rapide. Mais bon c'est de la gruge*/
+    while( !fini) {
 
-    while(! fini) {
 
 	// récupérer les évenements de fin
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 	  // handle your event here
 	  if (event.type == SDL_QUIT) {
+
 	    fini = true;
 	    break;
 	  }
 	}
 
 	debutConsommerTexture();
+
 
 	SDL_UpdateYUVTexture(texture, &rect,
 			       texturedate[tex_iaff].plane[0],
