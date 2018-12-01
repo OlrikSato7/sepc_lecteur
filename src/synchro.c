@@ -18,7 +18,7 @@ pthread_mutex_t hashMutex;
 void envoiTailleFenetre(th_ycbcr_buffer buffer) {
   pthread_mutex_lock(&mutexFenetre);
 
-  if (!fenetre_lu){
+  if (!fenetre_ecrite){
   // modifier les windows?
   //on a que un consom, un poducteur?
 //pthread_mutex_lock(&mutexFenetre);
@@ -34,13 +34,13 @@ void envoiTailleFenetre(th_ycbcr_buffer buffer) {
 
 void attendreTailleFenetre() {
   pthread_mutex_lock(&mutexFenetre);
-  if (!fenetre_lu){
+  //if (!fenetre_lu){
     //pthread_mutex_lock(&mutexFenetre);
     //la netre-feu est pas encore la
-    if (!fenetre_ecrite){
+    while (!fenetre_ecrite){
       pthread_cond_wait(&afficheur, &mutexFenetre);
     }
-  }
+  //}
     pthread_mutex_unlock(&mutexFenetre);
 }
 
@@ -62,7 +62,7 @@ void signalerFenetreEtTexturePrete() {
 void attendreFenetreTexture() {
   //apres avoir envoye la fenetre on attend que la fenetre soit affiche.
   pthread_mutex_lock(&mutexFenetre);
-  if (!fenetre_lu){
+  while (!fenetre_lu){
     pthread_cond_wait(&decodeur, &mutexFenetre);
   }
   //on a affiche la fenetre, on peut en recrire une nouvelle.
@@ -70,8 +70,8 @@ void attendreFenetreTexture() {
   // fenetre_ecrite = false;
   //la fenetre texture est affiche, on peut continuer.
 
+  fenetre_lu = false;
   pthread_mutex_unlock(&mutexFenetre);
-
 }
 
 
@@ -92,7 +92,7 @@ void debutConsommerTexture() {
 void finConsommerTexture() {
   pthread_mutex_lock(&mutexTexture);
   nb_case_pleine --;
-  tex_iaff = (tex_iaff + 1 ) % (NBTEX -1);
+  //tex_iaff = (tex_iaff + 1 ) % NBTEX;
   //reveille le thread product si il dors
   pthread_cond_signal(&producteur);
 
@@ -114,7 +114,7 @@ void debutDeposerTexture() {
 void finDeposerTexture() {
   pthread_mutex_lock(&mutexTexture);
   nb_case_pleine ++;
-  tex_iwri = (tex_iwri + 1 ) % (NBTEX -1);
+  //tex_iwri = (tex_iwri + 1 ) % NBTEX;
   //reveille le thread consom si il dors
   pthread_cond_signal(&consomateur);
   fprintf(stderr, "nb case pleine: %i\n", nb_case_pleine);
@@ -126,8 +126,6 @@ void inithashMutex()
 {
   pthread_mutex_init(&hashMutex, NULL);
 }
-
-
 
 void initFenetreMutex()
 {

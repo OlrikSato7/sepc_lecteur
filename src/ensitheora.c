@@ -77,7 +77,7 @@ void *draw2SDL(void *arg) {
     fprintf(stderr, "serial: %i \n",serial);
 
     assert(s->strtype == TYPE_THEORA);
-    // fini = false /*. la on a la video en mode rapide. Mais bon c'est de la gruge*/
+    //fini = false; /*. la on a la video en mode rapide. Mais bon c'est de la gruge*/
     while( !fini) {
 
 
